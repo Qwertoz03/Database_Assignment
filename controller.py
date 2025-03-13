@@ -30,62 +30,40 @@ class BookController:
     def add_book(self, title: str, author: str, publisher: int, isbn: str, year_published: int) -> None:
         """
         Adds a new book to the repository.
-
-        Args:
-            title (str): The title of the book.
-            author (str): The author of the book.
-            publisher (int): The publisher ID.
-            isbn (str): The ISBN of the book.
-            year_published (int): The publication year of the book.
+        Note: Since the book table no longer holds an author field directly,
+        we assume the author relationship is handled in book_author.
+        For simplicity, we add the book with a default genre_id (e.g. 1).
         """
         book = Book(
-            id = 0,  # Placeholder for auto-generated ID
-            title = title,
-            author = author,
-            publisher_id = publisher,
-            isbn = isbn,
-            year_published = year_published
+            id=0,  # Placeholder for auto-generated ID
+            title=title,
+            author=author,
+            publisher_id=publisher,
+            isbn=isbn,
+            year_published=year_published,
+            genre_id=1  # Default genre_id
         )
         try:
-            self.repository.add_book(book = book)
+            self.repository.add_book(book=book)
             logger.info(f"Book '{title}' added successfully.")
         except Exception as e:
             logger.error(f"Failed to add book '{title}': {e}")
             raise RuntimeError("Failed to add book.")
 
-    def delete_by_id(self, book_id: int) -> None:
-        """
-        Deletes a book by its ID.
-
-        Args:
-            book_id (int): The ID of the book to be deleted.
-        """
-        try:
-            self.repository.delete_book_by_id(book_id)
-            logger.info(f"Book with ID {book_id} deleted successfully.")
-        except Exception as e:
-            logger.error(f"Failed to delete book with ID {book_id}: {e}")
-            raise RuntimeError("Failed to delete book.")
-
     def update_book(self, bid: int, title: str, author: str, publisher_id: int, isbn: str, year: int) -> None:
         """
-        Updates the details of a book in the repository.
-
-        Args:
-            bid (int): The ID of the book to be updated.
-            title (str): The updated title of the book.
-            author (str): The updated author of the book.
-            publisher_id (int): The updated publisher ID.
-            isbn (str): The updated ISBN.
-            year (int): The updated publication year.
+        Updates the details of a book.
+        Note: The update currently modifies only the book table fields.
+        If the author changes, the book_author join table should be updated accordingly.
         """
         book = Book(
-            id = bid,
-            title = title,
-            author = author,
-            publisher_id = publisher_id,
-            isbn = isbn,
-            year_published = year
+            id=bid,
+            title=title,
+            author=author,
+            publisher_id=publisher_id,
+            isbn=isbn,
+            year_published=year,
+            genre_id=1  # Default genre_id or retrieve current genre_id as needed
         )
         try:
             self.repository.update_book(book)
@@ -97,14 +75,15 @@ class BookController:
 
 class QueryController:
     """
-    Controller class for handling queries related to authors, publishers, members, and loans.
+    Controller class for handling queries related to authors, publisher, members, and loans.
     """
 
     def __init__(self) -> None:
         """Initializes the QueryController with a repository instance."""
         self.repository = Repository()
 
-    def get_book_by_author(self, author_name: str) -> List[Book]:
+    def get_books_by_author_name(self, author_name: str) -> List[Book]:
+
         """
         Fetches books by the given author.
 
@@ -115,22 +94,26 @@ class QueryController:
             List[Book]: A list of Book objects written by the given author.
         """
         try:
-            return self.repository.get_books_by_author_name(author_name)
+            books = self.repository.get_books_by_author(author_name)
+            if books is None:
+                QMessageBox.warning(self, "Warning", "No books found for the given author.")
+                return
+            return self.repository.get_books_by_author(author_name)
         except Exception as e:
             logger.error(f"Failed to fetch books by author '{author_name}': {e}")
             return []
 
-    def get_all_publishers(self) -> List:
+    def list_all_publisher(self) -> List:
         """
-        Fetches all publishers from the repository.
+        Fetches all publisher from the repository.
 
         Returns:
             List[Publisher]: A list of Publisher objects.
         """
         try:
-            return self.repository.get_publishers()
+            return self.repository.get_publisher()
         except Exception as e:
-            logger.error(f"Failed to fetch publishers: {e}")
+            logger.error(f"Failed to fetch publisher: {e}")
             return []
 
     def get_all_members(self) -> List:
@@ -146,7 +129,7 @@ class QueryController:
             logger.error(f"Failed to fetch members: {e}")
             return []
 
-    def get_all_member_by_book(self, book_name: str) -> List[tuple]:
+    def list_all_members_by_book(self, book_name: str) -> List[tuple]:
         """
         Fetches all members who have borrowed the specified book.
 
@@ -157,12 +140,12 @@ class QueryController:
             List[tuple]: A list of tuples containing member and loan information.
         """
         try:
-            return self.repository.get_all_members_by_book(book_name)
+            return self.repository.list_all_members_by_book(book_name)
         except Exception as e:
             logger.error(f"Failed to fetch members by book '{book_name}': {e}")
             return []
 
-    def get_all_loans(self) -> List[tuple]:
+    def get_all_loan(self) -> List[tuple]:
         """
         Fetches all loan records from the repository.
 
@@ -170,7 +153,20 @@ class QueryController:
             List[tuple]: A list of tuples containing loan information.
         """
         try:
-            return self.repository.get_all_loans()
+            return self.repository.list_all_loan()
         except Exception as e:
             logger.error(f"Failed to fetch loan records: {e}")
+            return []
+        
+    def list_members_borrowed_at_least_one_book(self) -> List:
+        """"
+        Fetches all members who have borrowed at least one book.
+
+        Returns:
+            List[Member]: A list of Member objects.
+        """
+        try:
+            return self.repository.list_members_borrowed_at_least_one_book()
+        except Exception as e:
+            logger.error(f"Failed to fetch members who borrowed at least one book: {e}")
             return []

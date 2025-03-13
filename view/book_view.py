@@ -157,13 +157,17 @@ class BookTab(QWidget):
             return
 
         try:
+            year = int(year)
+            publisher_id = int(publisher)
+            # Assume a default genre_id (e.g. 1) since the form does not include it.
+            self.controller.add_book(title, author, publisher_id, isbn, year)
 
-            ### YOUR CODE ###
-
-            # remove the following line after your implementation
-            raise NotImplementedError("add_book method is not implemented.")
-
-            ### YOUR CODE ###
+            # Clear form fields
+            self.title_input.clear()
+            self.author_input.clear()
+            self.publisher_input.clear()
+            self.isbn_input.clear()
+            self.year_published_input.clear()
 
             QMessageBox.information(self, "Success", "Book added successfully!")
             self.refresh_book_table()
@@ -191,7 +195,6 @@ class BookTab(QWidget):
 
         title, author, publisher, isbn, year = self.get_form_input()
 
-        # checks if the fields are changed
         if title:
             book_title = title
         if author:
@@ -204,12 +207,18 @@ class BookTab(QWidget):
             book_year = year
 
         try:
-            ### YOUR CODE ###
+            # Convert publisher and year to integers as needed
+            book_publisher_id = int(book_publisher_id)
+            book_year = int(book_year)
 
-            # remove the following line after your implementation
-            raise NotImplementedError("update_book method is not implemented.")
+            self.controller.update_book(book_id, book_title, book_author, book_publisher_id, book_isbn, book_year)
 
-            ### YOUR CODE ###
+            self.title_input.clear()
+            self.author_input.clear()
+            self.publisher_input.clear()
+            self.isbn_input.clear()
+            self.year_published_input.clear()
+
             QMessageBox.information(self, "Success", "Book updated successfully!")
             self.refresh_book_table()
         except ValueError:
@@ -238,12 +247,14 @@ class BookTab(QWidget):
             return
 
         try:
-            ### YOUR CODE ###
+            self.controller.delete_by_id(book_id)
 
-            # remove the following line after your implementation
-            raise NotImplementedError("delete_book method is not implemented.")
-
-            ### YOUR CODE ###
+            self.title_input.clear()
+            self.author_input.clear()
+            self.publisher_input.clear()
+            self.isbn_input.clear()
+            self.year_published_input.clear()
+        
             QMessageBox.information(self, "Success", "Book deleted successfully!")
             self.refresh_book_table()
         except Exception as e:

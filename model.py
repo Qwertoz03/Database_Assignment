@@ -1,32 +1,27 @@
 from dataclasses import dataclass
 
-
 @dataclass
 class Book:
-    id: int
+    id: int             
     title: str
-    author: str
-    publisher_id: int
     isbn: str
-    year_published: int
-
+    pub_year: int        
+    genre_id: int        
+    publisher_id: int    
 
 @dataclass
 class Publisher:
-    id: int
+    id: int              
     name: str
     address: str
     phone: str
     email: str
 
-
 @dataclass
 class Member:
-    id: int
+    id: int         
     first_name: str
     last_name: str
-    email: str
-    phone: str
     address: str
-    date_of_membership: str
-
+    email: str
+    membership_date: str
